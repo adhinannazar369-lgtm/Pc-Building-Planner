@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-PC Build Planner</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar"><div class="brand"><span class="brand-icon">⚙</span><span>AI-PC<br>Build Planner</span></div>
+<nav><a class="active" href="#home">⌂ &nbsp; Home</a><a href="#planner">⚙ &nbsp; Build Planner</a><a href="#compat">✓ &nbsp; Compatibility Check</a><a href="#prices">₹ &nbsp; Price Comparison</a><a href="#builds">▣ &nbsp; My Builds</a></nav>
+<form method="post" th:action="@{/logout}"><button class="logout">↪ Logout</button></form></aside>
+<main class="main">
+<header class="top"><div><h1>Dashboard</h1><p class="muted">Build your dream PC with AI assistance.</p></div><span class="user-pill" th:text="${phone}">User</span></header>
+<p class="notice error" th:if="${error}" th:text="${error}"></p><p class="notice success" th:if="${success}" th:text="${success}"></p>
+<section id="home" class="hero"><div><h2>Build Your PC Smarter</h2><p>Choose a purpose and budget, get sample components, check the compatibility list and save your build in MySQL.</p><a class="primary inline" href="#planner">Start Building →</a></div><div class="hero-art">🖥️</div></section>
+<section id="planner" class="panel"><h2>Build Planner</h2><p class="muted">Choose a use case and budget for a sample component recommendation.</p>
+<form id="buildForm" method="post" th:action="@{/save-build}">
+<div class="field"><label>Purpose</label><select id="purpose" name="purpose"><option>Gaming</option><option>Work / Office</option><option>Editing / Design</option><option>Other</option></select></div>
+<div class="field"><label>Budget: ₹<span id="budgetLabel">50,000</span></label><input id="budget" type="range" min="30000" max="200000" step="5000" value="50000" name="budget"></div>
+<div class="muted range-labels"><span>₹30,000</span><span>₹2,00,000</span></div>
+<div id="parts" class="parts"></div><div class="total">Estimated Total: ₹<span id="total">50,000</span></div>
+<input type="hidden" name="componentsJson" id="componentsJson">
+<button type="button" class="secondary" onclick="checkCompatibility()">Check Compatibility</button>
+<button class="primary inline" type="submit" onclick="return prepareSave()">Save Build to MySQL</button>
+</form><p id="compatMessage" class="notice success hidden">The displayed sample components have been listed for a compatibility review. Confirm exact part specifications before purchasing.</p>
+</section>
+<section id="compat" class="panel"><h2>Compatibility Check</h2><p class="muted">This prototype lists selected components; it does not yet validate live manufacturer specifications.</p><ul><li>CPU socket and motherboard support</li><li>RAM type and motherboard support</li><li>Power supply wattage and GPU requirements</li><li>Case size and motherboard form factor</li></ul></section>
+<section id="prices" class="panel"><h2>Price Comparison</h2><p class="muted">Prices below are illustrative estimates, not live retailer prices.</p><p>Compare current offers directly on retailer websites before buying. Live store pricing requires a retailer/API integration.</p></section>
+<section id="builds" class="panel"><h2>My Builds</h2><p class="muted">Builds saved to your account database appear here.</p>
+<div th:if="${#lists.isEmpty(savedBuilds)}" class="muted">No saved builds yet.</div>
+<div class="saved-build" th:each="b : ${savedBuilds}"><b th:text="${b.purpose}">Gaming</b><span>Budget: ₹<span th:text="${#numbers.formatInteger(b.budget,1,'COMMA')}">50,000</span></span><small th:text="${#temporals.format(b.createdAt,'dd MMM yyyy, HH:mm')}">date</small><details><summary>Saved component data</summary><pre th:text="${b.componentsJson}"></pre></details></div>
+</section>
+<footer>AI-PC Build Planner · Java + Spring Boot + MySQL</footer>
+</main></div>
+<script>
+const baseParts=[
+ {type:'CPU',name:'AMD Ryzen 5 5600',price:11500,icon:'🧠'},
+ {type:'GPU',name:'NVIDIA GeForce RTX 4060',price:24000,icon:'🎮'},
+ {type:'Motherboard',name:'MSI B550M PRO-VDH WIFI',price:8500,icon:'▦'},
+ {type:'RAM',name:'Corsair Vengeance 16GB (2x8GB) DDR4',price:4200,icon:'▤'},
+ {type:'Storage',name:'WD Blue 1TB NVMe SSD',price:3800,icon:'💾'},
+ {type:'PSU',name:'Cooler Master 550W',price:3500,icon:'⚡'},
+ {type:'Case',name:'DeepCool MATREXX Series',price:3000,icon:'🖥️'}
+];
+const fmt=n=>Math.round(n).toLocaleString('en-IN');
+function getParts(){let scale=Number(document.getElementById('budget').value)/50000;return baseParts.map(p=>({...p,price:Math.round(p.price*scale/100)*100}));}
+function renderParts(){let p=getParts(),total=p.reduce((s,x)=>s+x.price,0);document.getElementById('budgetLabel').textContent=fmt(document.getElementById('budget').value);document.getElementById('total').textContent=fmt(total);document.getElementById('parts').innerHTML=p.map(x=>`<div class="part"><div><b>${x.icon} ${x.type}</b><div class="muted">${x.name}</div></div><strong>₹${fmt(x.price)}</strong></div>`).join('');}
+function prepareSave(){document.getElementById('componentsJson').value=JSON.stringify(getParts());return true;}
+function checkCompatibility(){document.getElementById('compatMessage').classList.remove('hidden');document.getElementById('compatMessage').scrollIntoView({behavior:'smooth',block:'center'});}
+document.getElementById('budget').addEventListener('input',renderParts);renderParts();
+</script></body></html>

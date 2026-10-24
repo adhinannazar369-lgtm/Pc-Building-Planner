@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-PC Build Planner | Login</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="auth-page">
+<div class="auth-card">
+  <div class="brand"><span class="brand-icon">⚙</span><span>AI-PC Build Planner</span></div>
+  <h1>Create Your Account</h1>
+  <p class="muted">Plan your PC smarter with recommendations, compatibility checks and price comparison.</p>
+  <p class="notice error" th:if="${error}" th:text="${error}"></p>
+  <p class="notice success" th:if="${success}" th:text="${success}"></p>
+  <div class="tabs"><button type="button" class="tab active" onclick="showTab('register')">Register</button><button type="button" class="tab" onclick="showTab('login')">Login</button></div>
+  <form id="register" class="form" method="post" th:action="@{/register}">
+    <label>Phone Number</label><input name="phone" type="tel" placeholder="Enter your phone number" required>
+    <label>Password</label><input name="password" type="password" minlength="8" placeholder="At least 8 characters" required>
+    <label>Confirm Password</label><input name="confirmPassword" type="password" minlength="8" placeholder="Confirm password" required>
+    <button class="primary">Create Account</button>
+  </form>
+  <form id="login" class="form hidden" method="post" th:action="@{/login}">
+    <label>Phone Number</label><input name="phone" type="tel" placeholder="Enter your phone number" required>
+    <label>Password</label><input name="password" type="password" placeholder="Enter your password" required>
+    <button class="primary">Login to Planner</button>
+  </form>
+</div>
+<script>
+function showTab(which){document.getElementById('register').classList.toggle('hidden',which!=='register');document.getElementById('login').classList.toggle('hidden',which!=='login');document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(which==='register'?i===0:i===1)));document.querySelector('h1').textContent=which==='register'?'Create Your Account':'Welcome Back';}
+</script></body></html>
